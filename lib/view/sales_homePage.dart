@@ -182,7 +182,7 @@ class _SalesHomePageState extends State<SalesHomePage>
           const SizedBox(height: 28),
           _buildSalesChart(),
           const SizedBox(height: 28),
-          _buildTopProducts(),
+          // _buildTopProducts(),
           const SizedBox(height: 20),
         ],
       ),

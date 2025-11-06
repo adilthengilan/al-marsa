@@ -1,14 +1,14 @@
 // Models
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Shop {
+class Branch {
   final String id;
   final String name;
   final String location;
   final String phone;
   final DateTime createdAt;
 
-  Shop({
+  Branch({
     required this.id,
     required this.name,
     required this.location,
@@ -16,9 +16,9 @@ class Shop {
     required this.createdAt,
   });
 
-  factory Shop.fromFirestore(DocumentSnapshot doc) {
+  factory Branch.fromFirestore(DocumentSnapshot doc) {
     Map data = doc.data() as Map<String, dynamic>;
-    return Shop(
+    return Branch(
       id: doc.id,
       name: data['name'] ?? '',
       location: data['location'] ?? '',

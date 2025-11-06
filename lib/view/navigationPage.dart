@@ -1,3 +1,4 @@
+import 'package:daily_sales/view/branch_management.dart';
 import 'package:daily_sales/view/sales_homePage.dart';
 import 'package:daily_sales/view/shop_page.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class _MainHomePageState extends State<MainHomePage> {
   final List<Widget> _pages = [
     const SalesHomePage(),
     const shops_page(),
-    const AnalyticsPage(),
+    const Branch_Page(),
     const SettingsPage(),
   ];
 
@@ -29,29 +30,50 @@ class _MainHomePageState extends State<MainHomePage> {
         //   actions: [if (_currentIndex == 0) _buildAppBarActions()],
         // ),
         body: _pages[_currentIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard),
-              label: 'Dashboard',
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
             ),
-            BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shops'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.analytics),
-              label: 'Analytics',
+            child: BottomNavigationBar(
+              backgroundColor: Colors.white,
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              type: BottomNavigationBarType.fixed,
+              items: [
+                BottomNavigationBarItem(
+                  icon: _currentIndex == 0
+                      ? Icon(Icons.dashboard, color: Colors.blue)
+                      : Icon(Icons.dashboard_outlined, color: Colors.blue),
+                  label: 'Dashboard',
+                ),
+                BottomNavigationBarItem(
+                  icon: _currentIndex == 0
+                      ? Icon(Icons.storefront, color: Colors.blue)
+                      : Icon(Icons.storefront_outlined, color: Colors.blue),
+                  label: 'Shops',
+                ),
+                BottomNavigationBarItem(
+                  icon: _currentIndex == 0
+                      ? Icon(Icons.analytics, color: Colors.blue)
+                      : Icon(Icons.analytics_outlined, color: Colors.blue),
+                  label: 'Analytics',
+                ),
+                BottomNavigationBarItem(
+                  icon: _currentIndex == 0
+                      ? Icon(Icons.settings, color: Colors.blue)
+                      : Icon(Icons.settings_accessibility, color: Colors.blue),
+                  label: 'Settings',
+                ),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: 'Settings',
-            ),
-          ],
+          ),
         ),
       ),
     );

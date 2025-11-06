@@ -6,14 +6,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 // Main Shops Page
-class shops_page extends StatefulWidget {
-  const shops_page({super.key});
+class Branch_Page extends StatefulWidget {
+  const Branch_Page({super.key});
 
   @override
-  State<shops_page> createState() => _shops_pageState();
+  State<Branch_Page> createState() => _Branch_PageState();
 }
 
-class _shops_pageState extends State<shops_page> {
+class _Branch_PageState extends State<Branch_Page> {
   final BranchService _shopService = BranchService();
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -51,7 +51,7 @@ class _shops_pageState extends State<shops_page> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Shop Management',
+                            'Branch Management',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 28,
@@ -278,7 +278,7 @@ class _shops_pageState extends State<shops_page> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SalesPage(shop: shop),
+                    builder: (context) => BranchSsales(shop: shop),
                   ),
                 );
               },
@@ -639,7 +639,7 @@ class _shops_pageState extends State<shops_page> {
 Future<Map<String, double>> getShopStats(String shopId) async {
   try {
     final sales = await FirebaseFirestore.instance
-        .collection('sales')
+        .collection('branchSales')
         .where('shopId', isEqualTo: shopId)
         .get();
 
@@ -726,7 +726,7 @@ Future<Map<String, double>> getShopStats(String shopId) async {
 Future<Map<String, double>> getShopStats(String shopId) async {
   try {
     final sales = await FirebaseFirestore.instance
-        .collection('sales')
+        .collection('branchSales')
         .where('shopId', isEqualTo: shopId)
         .get();
 
@@ -1030,16 +1030,16 @@ Future<Map<String, double>> getShopStats(String shopId) async {
 
 // Sales Page
 
-class SalesPage extends StatefulWidget {
+class BranchSsales extends StatefulWidget {
   final Shop shop;
 
-  const SalesPage({super.key, required this.shop});
+  const BranchSsales({super.key, required this.shop});
 
   @override
-  State<SalesPage> createState() => _SalesPageState();
+  State<BranchSsales> createState() => _BranchSsalesState();
 }
 
-class _SalesPageState extends State<SalesPage>
+class _BranchSsalesState extends State<BranchSsales>
     with SingleTickerProviderStateMixin {
   final BranchService _shopService = BranchService();
   late TabController _tabController;
@@ -3453,7 +3453,7 @@ Future<void> updateSale({
 }) async {
   // Your Firestore/Database update logic
   await FirebaseFirestore.instance
-      .collection('sales')
+      .collection('branchSales')
       .doc(saleId)
       .update({
     'paymentStatus': paymentStatus,

@@ -1,5 +1,6 @@
 // Firestore Service
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:daily_sales/model/branch.dart';
 import 'package:daily_sales/model/sale_models.dart';
 import 'package:daily_sales/model/shop_models.dart';
 
@@ -7,18 +8,18 @@ class BranchService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // Shop CRUD Operations
-  Future<void> addShop(Shop shop) async {
-    await _db.collection('shops').add(shop.toFirestore());
+  Future<void> addBranch(Branch shop) async {
+    await _db.collection('branches').add(shop.toFirestore());
   }
 
   Future<void> updateShop(Shop shop) async {
-    await _db.collection('shops').doc(shop.id).update(shop.toFirestore());
+    await _db.collection('branches').doc(shop.id).update(shop.toFirestore());
   }
 
   Future<void> deleteShop(String shopId) async {
     // Delete all sales for this shop first
     final salesQuery = await _db
-        .collection('sales')
+        .collection('branchSales')
         .where('shopId', isEqualTo: shopId)
         .get();
 
@@ -27,36 +28,36 @@ class BranchService {
     }
 
     // Then delete the shop
-    await _db.collection('shops').doc(shopId).delete();
+    await _db.collection('branches').doc(shopId).delete();
   }
 
-  Stream<List<Shop>> getShops() {
+  Stream<List<Branch>> getShops() {
     return _db
-        .collection('shops')
+        .collection('branches')
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map(
           (snapshot) =>
-              snapshot.docs.map((doc) => Shop.fromFirestore(doc)).toList(),
+              snapshot.docs.map((doc) => Branch.fromFirestore(doc)).toList(),
         );
   }
 
   // Sale CRUD Operations
   Future<void> addSale(Branch_Sale sale) async {
-    await _db.collection('sales').add(sale.toFirestore());
+    await _db.collection('branchSales').add(sale.toFirestore());
   }
 
   Future<void> updateSale(Branch_Sale sale) async {
-    await _db.collection('sales').doc(sale.id).update(sale.toFirestore());
+    await _db.collection('branchSales').doc(sale.id).update(sale.toFirestore());
   }
 
   Future<void> deleteSale(String saleId) async {
-    await _db.collection('sales').doc(saleId).delete();
+    await _db.collection('branchSales').doc(saleId).delete();
   }
 
   Stream<List<Branch_Sale>> getSalesForShop(String shopId) {
     return FirebaseFirestore.instance
-        .collection('sales')
+        .collection('branchSales')
         .where('shopId', isEqualTo: shopId)
         .snapshots()
         .map((snapshot) {
@@ -72,7 +73,7 @@ class BranchService {
   // Statistics
   Future<Map<String, double>> getShopStats(String shopId) async {
     final salesSnapshot = await _db
-        .collection('sales')
+        .collection('branchSales')
         .where('shopId', isEqualTo: shopId)
         .get();
 

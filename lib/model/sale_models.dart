@@ -8,7 +8,8 @@ class Branch_Sale {
   final DateTime date;
   final String paymentMethod; // 'cash' or 'bank'
   final bool isPaid;
-  final double? paidAmount; // NEW FIELD - tracks partial payments
+  final double paidAmount; // tracks partial payments
+  final List<String> billImages; // physical bill images
 
   Branch_Sale({
     required this.id,
@@ -18,21 +19,40 @@ class Branch_Sale {
     required this.date,
     required this.paymentMethod,
     this.isPaid = true,
-    this.paidAmount = 0.0, // Default to 0
+    this.paidAmount = 0.0,
+    this.billImages = const [],
   });
 
   factory Branch_Sale.fromFirestore(DocumentSnapshot doc) {
-    Map data = doc.data() as Map<String, dynamic>;
+  final data = doc.data() as Map<String, dynamic>?;
+
+  if (data == null) {
     return Branch_Sale(
       id: doc.id,
-      shopId: data['shopId'] ?? '',
-      productName: data['productName'] ?? '',
-      amount: (data['amount'] ?? 0).toDouble(),
-      date: (data['date'] as Timestamp).toDate(),
-      paymentMethod: data['paymentMethod'] ?? 'cash',
-      isPaid: data['isPaid'] ?? true,
+      shopId: '',
+      productName: '',
+      amount: 0,
+      date: DateTime.now(),
+      paymentMethod: 'cash',
+      isPaid: true,
+      paidAmount: 0,
+      billImages: [],
     );
   }
+
+  return Branch_Sale(
+    id: doc.id,
+    shopId: data['shopId'] ?? '',
+    productName: data['productName'] ?? '',
+    amount: (data['amount'] ?? 0).toDouble(),
+    date: (data['date'] as Timestamp).toDate(),
+    paymentMethod: data['paymentMethod'] ?? 'cash',
+    isPaid: data['isPaid'] ?? true,
+    paidAmount: (data['paidAmount'] ?? 0).toDouble(),
+    billImages: List<String>.from(data['billImages'] ?? []),
+  );
+}
+
 
   Map<String, dynamic> toFirestore() {
     return {
@@ -42,6 +62,8 @@ class Branch_Sale {
       'date': Timestamp.fromDate(date),
       'paymentMethod': paymentMethod,
       'isPaid': isPaid,
+      'paidAmount': paidAmount,
+      'billImages': billImages,
     };
   }
 }

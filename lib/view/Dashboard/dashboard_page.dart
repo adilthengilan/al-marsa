@@ -1,19 +1,97 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'dart:math' as math;
 
-class SalesHomePage extends StatefulWidget {
-  const SalesHomePage({super.key});
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
 
   @override
-  State<SalesHomePage> createState() => _SalesHomePageState();
+  State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _SalesHomePageState extends State<SalesHomePage>
+class _DashboardPageState extends State<DashboardPage>
     with TickerProviderStateMixin {
   int _currentIndex = 0;
   DateTime _selectedDate = DateTime.now();
   int _selectedTimeRange = 0;
+  //OVERVIEW GRID TILES DATA//
+  double totalRevenue = 0;
+  int totalOrders = 0;
+  int totalCustomers = 0;
+  double conversionRate = 0.0;
+  double customerChange = 0.0;
+  double conversionChange = 0.0;
+  //SALES CHART DATA//
+  List<Map<String, dynamic>> last7DaysData = [];
+
+  // Fetch summary data from Firestore of overview//
+  Future<void> fetchSummaryData() async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('branch_sales')
+        .get();
+
+    double revenue = 0;
+    int orders = querySnapshot.docs.length;
+
+    final Set<String> uniqueShops = {}; // we treat shopId as customer
+
+    for (var doc in querySnapshot.docs) {
+      revenue += (doc['amount'] ?? 0).toDouble();
+
+      if (doc['shopId'] != null) {
+        uniqueShops.add(doc['shopId']);
+      }
+    }
+
+    int customers = uniqueShops.length;
+    double conversion = customers > 0 ? (orders / customers) * 100 : 0;
+
+    setState(() {
+      totalRevenue = revenue;
+      totalOrders = orders;
+      totalCustomers = customers;
+      conversionRate = conversion;
+    });
+  }
+
+  // Fetch sales chart data from Firestore of sales chart//
+  Future<void> fetchSalesChartData() async {
+    final now = DateTime.now();
+    final startDate = now.subtract(Duration(days: 6)); // last 7 days
+
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('branch_sales')
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+        .orderBy('date')
+        .get();
+
+    // Fill last 7 days with zero values first
+    Map<String, double> dailyTotals = {};
+    for (int i = 0; i < 7; i++) {
+      final date = now.subtract(Duration(days: i));
+      final key = "${date.year}-${date.month}-${date.day}";
+      dailyTotals[key] = 0.0;
+    }
+
+    // Add Firestore revenue
+    for (var doc in querySnapshot.docs) {
+      final DateTime date = (doc['date'] as Timestamp).toDate();
+      final key = "${date.year}-${date.month}-${date.day}";
+
+      dailyTotals[key] =
+          (dailyTotals[key] ?? 0) + (doc['amount'] ?? 0).toDouble();
+    }
+
+    // Convert to list for chart
+    List<Map<String, dynamic>> formatted = [];
+    dailyTotals.forEach((key, value) {
+      formatted.add({'date': key, 'value': value});
+    });
+
+    setState(() {
+      last7DaysData = formatted.reversed.toList(); // oldest → newest
+    });
+  }
 
   // Animation controllers
   late final AnimationController _headerController;
@@ -32,32 +110,32 @@ class _SalesHomePageState extends State<SalesHomePage>
   late final Animation<double> _pulseAnimation;
 
   // Sample data
-  final List<Map<String, dynamic>> summaryCards = [
+  List<Map<String, dynamic>> get summaryCards => [
     {
       'title': 'Total Revenue',
-      'value': 'AED 24,580',
-      'change': '+12.5%',
+      'value': 'AED ${totalRevenue.toStringAsFixed(2)}',
+      'change': '+${((totalRevenue / 10000) * 10).toStringAsFixed(1)}%',
       'icon': Icons.attach_money_rounded,
       'gradient': [Color(0xFF2196F3), Color(0xFF1976D2)],
     },
     {
       'title': 'Orders',
-      'value': '324',
-      'change': '+8.2%',
+      'value': '$totalOrders',
+      'change': '+${(totalOrders * 0.1).toStringAsFixed(1)}%',
       'icon': Icons.shopping_bag_rounded,
       'gradient': [Color(0xFF1E88E5), Color(0xFF1565C0)],
     },
     {
       'title': 'Customers',
-      'value': '189',
-      'change': '-2.1%',
+      'value': '$totalCustomers',
+      'change': '+${(totalCustomers * 0.05).toStringAsFixed(1)}%',
       'icon': Icons.people_rounded,
       'gradient': [Color(0xFF42A5F5), Color(0xFF1E88E5)],
     },
     {
       'title': 'Conversion',
-      'value': '12.8%',
-      'change': '+1.5%',
+      'value': '${conversionRate.toStringAsFixed(1)}%',
+      'change': '+${(conversionRate * 0.02).toStringAsFixed(1)}%',
       'icon': Icons.trending_up_rounded,
       'gradient': [Color(0xFF64B5F6), Color(0xFF42A5F5)],
     },
@@ -74,7 +152,8 @@ class _SalesHomePageState extends State<SalesHomePage>
   @override
   void initState() {
     super.initState();
-
+    fetchSummaryData();
+    fetchSalesChartData(); // <-- add this
     // Initialize controllers first
     _headerController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -164,6 +243,7 @@ class _SalesHomePageState extends State<SalesHomePage>
         ),
         child: SafeArea(child: _buildBody()),
       ),
+      // bottomNavigationBar: const BottomNavBar(selectedIndex: 0),
     );
   }
 
@@ -182,7 +262,7 @@ class _SalesHomePageState extends State<SalesHomePage>
           const SizedBox(height: 28),
           _buildSalesChart(),
           const SizedBox(height: 28),
-          // _buildTopProducts(),
+          _buildTopProducts(),
           const SizedBox(height: 20),
         ],
       ),
@@ -196,7 +276,7 @@ class _SalesHomePageState extends State<SalesHomePage>
         return Transform.scale(
           scale: _headerAnimation.value,
           child: Opacity(
-            opacity: _headerAnimation.value,
+            opacity: _headerAnimation.value.clamp(0.0, 1.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -267,7 +347,7 @@ class _SalesHomePageState extends State<SalesHomePage>
         return Transform.translate(
           offset: Offset(0, (1 - _cardAnimation.value) * 20),
           child: Opacity(
-            opacity: _cardAnimation.value,
+            opacity: _cardAnimation.value.clamp(0.0, 1.0),
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -367,7 +447,13 @@ class _SalesHomePageState extends State<SalesHomePage>
           itemBuilder: (context, index) {
             final card = summaryCards[index];
             return FadeTransition(
-              opacity: _cardAnimation,
+              opacity: _cardAnimation.drive(
+                Tween<double>(
+                  begin: 0.0,
+                  end: 1.0,
+                ).chain(CurveTween(curve: Curves.linear)),
+              ),
+
               child: ScaleTransition(
                 scale: _cardAnimation,
                 child: TweenAnimationBuilder(
@@ -421,7 +507,7 @@ class _SalesHomePageState extends State<SalesHomePage>
                             ),
                             // Content
                             Padding(
-                              padding: const EdgeInsets.all(20.0),
+                              padding: const EdgeInsets.all(10.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment:
@@ -536,7 +622,8 @@ class _SalesHomePageState extends State<SalesHomePage>
         ),
         const SizedBox(height: 16),
         FadeTransition(
-          opacity: _chartAnimation,
+          opacity: _chartAnimation.drive(Tween<double>(begin: 0.0, end: 1.0)),
+
           child: SlideTransition(
             position: Tween<Offset>(
               begin: const Offset(0, 0.2),
@@ -559,12 +646,13 @@ class _SalesHomePageState extends State<SalesHomePage>
                 ],
               ),
               child: Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // LEFT SIDE
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -586,13 +674,18 @@ class _SalesHomePageState extends State<SalesHomePage>
                             ),
                           ],
                         ),
-                        Row(
-                          children: [
-                            _buildAnimatedTimeTab('Day', 0),
-                            _buildAnimatedTimeTab('Week', 1),
-                            _buildAnimatedTimeTab('Month', 2),
-                          ],
-                        ),
+
+                        // RIGHT SIDE (SCROLLABLE)
+                        // SingleChildScrollView(
+                        //   scrollDirection: Axis.horizontal,
+                        //   child: Row(
+                        //     children: [
+                        //       _buildAnimatedTimeTab('Day', 0),
+                        //       _buildAnimatedTimeTab('Week', 1),
+                        //       _buildAnimatedTimeTab('Month', 2),
+                        //     ],
+                        //   ),
+                        // ),
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -608,11 +701,25 @@ class _SalesHomePageState extends State<SalesHomePage>
   }
 
   Widget _buildAnimatedChart() {
+    if (last7DaysData.isEmpty) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    // max value for Y axis
+    double maxY =
+        last7DaysData.map((e) => e['value']).reduce((a, b) => a > b ? a : b) +
+        1;
+
     return AnimatedBuilder(
       animation: _chartAnimation,
       builder: (context, child) {
         return LineChart(
           LineChartData(
+            minX: 0,
+            maxX: 6,
+            minY: 0,
+            maxY: maxY,
+
             gridData: FlGridData(
               show: true,
               drawVerticalLine: false,
@@ -624,27 +731,31 @@ class _SalesHomePageState extends State<SalesHomePage>
                 );
               },
             ),
+
+            // ==== TITLES ====
             titlesData: FlTitlesData(
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  interval: 1,
+                  reservedSize: 40,
                   getTitlesWidget: (value, meta) {
                     return Text(
-                      '${value.toInt()}k',
+                      '${(value).toStringAsFixed(0)}k',
                       style: TextStyle(
+                        fontSize: 12,
                         color: Colors.grey[600],
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     );
                   },
-                  reservedSize: 32,
                 ),
               ),
+
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
+                  reservedSize: 45,
+
                   getTitlesWidget: (value, meta) {
                     const days = [
                       'Mon',
@@ -655,22 +766,17 @@ class _SalesHomePageState extends State<SalesHomePage>
                       'Sat',
                       'Sun',
                     ];
-                    if (value.toInt() < days.length) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          days[value.toInt()],
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
+                    return Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: Text(
+                        days[value.toInt()],
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w600,
                         ),
-                      );
-                    }
-                    return Text('');
+                      ),
+                    );
                   },
-                  reservedSize: 32,
                 ),
               ),
               rightTitles: AxisTitles(
@@ -678,28 +784,31 @@ class _SalesHomePageState extends State<SalesHomePage>
               ),
               topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             ),
+
             borderData: FlBorderData(show: false),
-            minX: 0,
-            maxX: 6,
-            minY: 0,
-            maxY: 5,
+
+            // ========== LINE =============
             lineBarsData: [
               LineChartBarData(
-                spots: [
-                  FlSpot(0, 2 * _chartAnimation.value),
-                  FlSpot(1, 3.5 * _chartAnimation.value),
-                  FlSpot(2, 2.8 * _chartAnimation.value),
-                  FlSpot(3, 4.2 * _chartAnimation.value),
-                  FlSpot(4, 3.5 * _chartAnimation.value),
-                  FlSpot(5, 4.8 * _chartAnimation.value),
-                  FlSpot(6, 4.5 * _chartAnimation.value),
-                ],
+                spots: last7DaysData.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  double value = entry.value['value'] ?? 0;
+
+                  return FlSpot(
+                    index.toDouble(),
+                    value * _chartAnimation.value,
+                  );
+                }).toList(),
+
                 isCurved: true,
-                gradient: LinearGradient(
+                barWidth: 4,
+
+                // BLUE COLOR
+                gradient: const LinearGradient(
                   colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
                 ),
-                barWidth: 4,
-                isStrokeCapRound: true,
+
+                // ROUND DOTS (OLD UI)
                 dotData: FlDotData(
                   show: true,
                   getDotPainter: (spot, percent, barData, index) {
@@ -711,6 +820,8 @@ class _SalesHomePageState extends State<SalesHomePage>
                     );
                   },
                 ),
+
+                // GRADIENT BELOW LINE (OLD UI)
                 belowBarData: BarAreaData(
                   show: true,
                   gradient: LinearGradient(
@@ -746,7 +857,10 @@ class _SalesHomePageState extends State<SalesHomePage>
         SlideTransition(
           position: _slideAnimation,
           child: FadeTransition(
-            opacity: _productAnimation,
+            opacity: _productAnimation.drive(
+              Tween<double>(begin: 0.0, end: 1.0),
+            ),
+
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

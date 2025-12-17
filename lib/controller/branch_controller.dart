@@ -109,6 +109,8 @@ class BranchService {
       'bankAmount': bankAmount, // NEW
     };
   }
+
+  Future<void> deleteBillImage(String id, String url) async {}
 }
 
 // Future<Map<String, double>> getShopStats(String shopId) async {

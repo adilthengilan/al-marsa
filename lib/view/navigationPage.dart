@@ -1,108 +1,73 @@
-import 'package:daily_sales/view/branch_management.dart';
-import 'package:daily_sales/view/sales_homePage.dart';
-import 'package:daily_sales/view/shop_page.dart';
+// import 'package:daily_sales/view/branch_management.dart';
+// import 'package:daily_sales/view/sales_homePage.dart';
+// import 'package:daily_sales/view/shop_page.dart';
+// import 'package:daily_sales/widget/CustomBottomNav.dart';
+// import 'package:flutter/material.dart';
+
+// class MainHomePage extends StatefulWidget {
+//   const MainHomePage({super.key});
+
+//   @override
+//   State<MainHomePage> createState() => _MainHomePageState();
+// }
+
+// class _MainHomePageState extends State<MainHomePage> {
+//   int _currentIndex = 0;
+
+//   final List<Widget> _pages = [
+//     const SalesHomePage(),
+//     const shops_page(),
+//     const Branch_Page(),
+//     const SettingsPage(),
+//   ];
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return SafeArea(
+//       child: Scaffold(
+//         body: _pages[_currentIndex],
+
+//         // 👉 USING YOUR NEW CUSTOM NAVBAR
+//         bottomNavigationBar: CustomBottomNav(
+//           currentIndex: _currentIndex,
+//           onTap: (index) {
+//             setState(() {
+//               _currentIndex = index;
+//             });
+//           },
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+
+  // _getAppBarTitle(int index) {
+  //   switch (index) {
+  //     case 0:
+  //       return 'Dashboard';
+  //     case 1:
+  //       return 'Shops';
+  //     case 2:
+  //       return 'Analytics';
+  //     case 3:
+  //       return 'Settings';
+  //     default:
+  //       return 'Sales Management';
+  //   }
+  // }
+
+  // Widget _buildAppBarActions() {
+  //   return Row(
+  //     children: [
+  //       IconButton(icon: const Icon(Icons.calendar_today), onPressed: () {}),
+  //       IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
+  //     ],
+  //   );
+  // }
+
+
 import 'package:flutter/material.dart';
-
-class MainHomePage extends StatefulWidget {
-  const MainHomePage({super.key});
-
-  @override
-  State<MainHomePage> createState() => _MainHomePageState();
-}
-
-class _MainHomePageState extends State<MainHomePage> {
-  int _currentIndex = 0;
-
-  final List<Widget> _pages = [
-    const SalesHomePage(),
-    const shops_page(),
-    const Branch_Page(),
-    const SettingsPage(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        extendBody: true,
-        // appBar: AppBar(
-        //   title: Text(_getAppBarTitle(_currentIndex)),
-        //   actions: [if (_currentIndex == 0) _buildAppBarActions()],
-        // ),
-        body: _pages[_currentIndex],
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: BottomNavigationBar(
-              backgroundColor: Colors.white,
-              currentIndex: _currentIndex,
-              onTap: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-              type: BottomNavigationBarType.fixed,
-              items: [
-                BottomNavigationBarItem(
-                  icon: _currentIndex == 0
-                      ? Icon(Icons.dashboard, color: Colors.blue)
-                      : Icon(Icons.dashboard_outlined, color: Colors.blue),
-                  label: 'Dashboard',
-                ),
-                BottomNavigationBarItem(
-                  icon: _currentIndex == 0
-                      ? Icon(Icons.storefront, color: Colors.blue)
-                      : Icon(Icons.storefront_outlined, color: Colors.blue),
-                  label: 'Shops',
-                ),
-                BottomNavigationBarItem(
-                  icon: _currentIndex == 0
-                      ? Icon(Icons.analytics, color: Colors.blue)
-                      : Icon(Icons.analytics_outlined, color: Colors.blue),
-                  label: 'Analytics',
-                ),
-                BottomNavigationBarItem(
-                  icon: _currentIndex == 0
-                      ? Icon(Icons.settings, color: Colors.blue)
-                      : Icon(Icons.settings_accessibility, color: Colors.blue),
-                  label: 'Settings',
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  _getAppBarTitle(int index) {
-    switch (index) {
-      case 0:
-        return 'Dashboard';
-      case 1:
-        return 'Shops';
-      case 2:
-        return 'Analytics';
-      case 3:
-        return 'Settings';
-      default:
-        return 'Sales Management';
-    }
-  }
-
-  Widget _buildAppBarActions() {
-    return Row(
-      children: [
-        IconButton(icon: const Icon(Icons.calendar_today), onPressed: () {}),
-        IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
-      ],
-    );
-  }
-}
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -397,119 +362,6 @@ class AnalyticsPage extends StatelessWidget {
           color: isActive ? Colors.white : Colors.grey.shade700,
           fontWeight: FontWeight.w500,
         ),
-      ),
-    );
-  }
-}
-
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Settings', style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 24),
-
-          // Account Settings
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Account',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  const ListTile(
-                    leading: Icon(Icons.person),
-                    title: Text('Profile Information'),
-                  ),
-                  const Divider(),
-                  const ListTile(
-                    leading: Icon(Icons.lock),
-                    title: Text('Change Password'),
-                  ),
-                  const Divider(),
-                  const ListTile(
-                    leading: Icon(Icons.notifications),
-                    title: Text('Notification Settings'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // App Settings
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'App Settings',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  const ListTile(
-                    leading: Icon(Icons.palette),
-                    title: Text('Theme'),
-                  ),
-                  const Divider(),
-                  const ListTile(
-                    leading: Icon(Icons.language),
-                    title: Text('Language'),
-                  ),
-                  const Divider(),
-                  const ListTile(
-                    leading: Icon(Icons.backup),
-                    title: Text('Backup & Restore'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Support
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Support',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  const ListTile(
-                    leading: Icon(Icons.help),
-                    title: Text('Help Center'),
-                  ),
-                  const Divider(),
-                  const ListTile(
-                    leading: Icon(Icons.contact_support),
-                    title: Text('Contact Support'),
-                  ),
-                  const Divider(),
-                  const ListTile(
-                    // leading: Icon.info,
-                    title: Text('About'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

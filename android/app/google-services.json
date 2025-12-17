@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "405197341911",
-    "project_id": "accounts-software-4a8a0",
-    "storage_bucket": "accounts-software-4a8a0.firebasestorage.app"
+    "project_number": "77911016174",
+    "project_id": "daily-sales-app-23581",
+    "storage_bucket": "daily-sales-app-23581.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:405197341911:android:d9d5264e6ab91ee4305c92",
+        "mobilesdk_app_id": "1:77911016174:android:4443cc5b63be002a0229ff",
         "android_client_info": {
           "package_name": "com.example.daily_sales"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBCPRSnyugl10GvJoIoZESrdmfefovTo00"
+          "current_key": "AIzaSyBeuNngo4cN7b4KIqdx5_9Wu1xVVaL6Zx8"
         }
       ],
       "services": {

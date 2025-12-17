@@ -2,7 +2,6 @@ import 'package:daily_sales/controller/shop_services.dart';
 import 'package:daily_sales/model/sale_models.dart';
 import 'package:daily_sales/model/shop_models.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 // Main Shops Page
@@ -41,7 +40,7 @@ class _Branch_PageState extends State<Branch_Page> {
                   ),
                 ],
               ),
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
                   Row(
@@ -187,6 +186,7 @@ class _Branch_PageState extends State<Branch_Page> {
           ],
         ),
       ),
+      // bottomNavigationBar: const BottomNavBar(selectedIndex: 2),
     );
   }
 
@@ -3387,6 +3387,7 @@ void _updateSale(
         amount: newPaidAmount,
         date: sale.date,
         paymentMethod: paymentMethod,
+        
       ),
     );
 

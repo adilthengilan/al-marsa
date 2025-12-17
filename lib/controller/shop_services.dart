@@ -6,6 +6,22 @@ import 'package:daily_sales/model/shop_models.dart';
 class BranchService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  Future<void> updateBillImages(String saleId, List<String> urls) async {
+    await _db.collection('sales').doc(saleId).update({'billImages': urls});
+  }
+
+  Future<void> deleteBillImage(String saleId, String url) async {
+    await FirebaseFirestore.instance.collection('sales').doc(saleId).update({
+      'billImages': FieldValue.arrayRemove([url]),
+    });
+  }
+
+  Future<void> addBillImage(String saleId, String imageUrl) async {
+    await FirebaseFirestore.instance.collection('sales').doc(saleId).update({
+      'billImages': FieldValue.arrayUnion([imageUrl]),
+    });
+  }
+
   // Shop CRUD Operations
   Future<void> addShop(Shop shop) async {
     await _db.collection('shops').add(shop.toFirestore());
@@ -43,7 +59,11 @@ class BranchService {
 
   // Sale CRUD Operations
   Future<void> addSale(Branch_Sale sale) async {
-    await _db.collection('sales').add(sale.toFirestore());
+    // Add sale to Firestore
+    final docRef = await _db.collection('sales').add(sale.toFirestore());
+
+    // Update the document with its own ID
+    await docRef.update({'id': docRef.id});
   }
 
   Future<void> updateSale(Branch_Sale sale) async {
